@@ -6,6 +6,7 @@ from torch.utils.data import TensorDataset, DataLoader
 from torch import optim
 from torch.nn.modules.loss import CrossEntropyLoss
 
+import numpy as np
 from one_cycle import OneCycle, update_lr, update_mom
 
 # Functions for training
@@ -63,7 +64,7 @@ def fit_one_cycle(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle_s
         model.train()
         for xb, yb in train_dl:
             loss_batch(model, loss_func, xb, yb, opt)
-            lr, mom = onecycle.calc()
+            lr, mom = one_cycle_scheduler.calc()
             update_lr(opt, lr)
             update_mom(opt, mom)
 
