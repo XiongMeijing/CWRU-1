@@ -11,12 +11,46 @@ from one_cycle import OneCycle, update_lr, update_mom
 
 # Functions for training
 def get_dataloader(train_ds, valid_ds, bs):
+    '''
+        Get dataloaders of the training and validation set.
+
+        Parameter:
+            train_ds: Dataset
+                Training set
+            valid_ds: Dataset
+                Validation set
+            bs: Int
+                Batch size
+        
+        Return:
+            (train_dl, valid_dl): Tuple of DataLoader
+                Dataloaders of training and validation set.
+    '''
     return (
         DataLoader(train_ds, batch_size=bs, shuffle=True),
         DataLoader(valid_ds, batch_size=bs * 2),
     )
 
 def loss_batch(model, loss_func, xb, yb, opt=None):
+    '''
+        Parameter:
+            model: Module
+                Your neural network model
+            loss_func: Loss
+                Loss function, e.g. CrossEntropyLoss()
+            xb: Tensor
+                One batch of input x
+            yb: Tensor
+                One batch of true label y
+            opt: Optimizer
+                Optimizer, e.g. SGD()
+        
+        Return:
+            loss.item(): Python number
+                Loss of the current batch
+            len(xb): Int
+                Number of examples of the current batch
+    '''
     loss = loss_func(model(xb), yb)
 
     if opt is not None:
@@ -27,6 +61,33 @@ def loss_batch(model, loss_func, xb, yb, opt=None):
     return loss.item(), len(xb)
 
 def fit(epochs, model, loss_func, opt, train_dl, valid_dl):
+    '''
+        Train the NN model and return the model at the final step.
+        Lists of the training and validation losses at each epochs are also 
+        returned.
+
+        Parameter:
+            epochs: int
+                Number of epochs to run.
+            model: Module
+                Your neural network model
+            loss_func: Loss
+                Loss function, e.g. CrossEntropyLoss()
+            opt: Optimizer
+                Optimizer, e.g. SGD()
+            train_dl: DataLoader
+                Dataloader of the training set.
+            valid_dl: DataLoader
+                Dataloader of the validation set.
+
+        Return:
+            model: Module
+                Model at the last training step
+            train_losses: List
+                List of the training loss at each epochs.
+            val_losses: List
+                List of the validation loss at each epochs.
+    '''
     print('EPOCH', '\t', 'Val Loss', '\t', 'Accuracy')
     train_losses = []
     val_losses = []
