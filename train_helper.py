@@ -8,6 +8,7 @@ from torch.nn.modules.loss import CrossEntropyLoss
 
 from sklearn.metrics import accuracy_score
 import numpy as np
+import pandas as pd
 from one_cycle import OneCycle, update_lr, update_mom
 
 # Functions for training
@@ -130,15 +131,22 @@ def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None, train
         train_losses.append(train_loss)
         train_accuracies.append(train_accuracy)
         
-
         print(
-            f'{epoch}: \t', 
+            f'{epoch} \t', 
             f'{train_loss:.05f}', '\t',
             f'{val_loss:.05f}', '\t', 
             f'{train_accuracy:.05f}', '\t'
             f'{val_accuracy:.05f}', '\t')
         
-    return model, train_losses, val_losses, val_accuracies
+    metrics_dic = {
+        "train losses": train_losses,
+        "train accuracies": train_accuracies,
+        "val losses": val_losses,
+        "val accuracies": val_accuracies,
+    }
+    metrics = pd.DataFrame.from_dict(metrics_dic)
+
+    return model, metrics
 
 def validate(model, dl, loss_func):
     total_loss = 0.0
