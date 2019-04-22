@@ -113,26 +113,22 @@ def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None):
         batch_count = 0
         for xb, yb in train_dl:
             loss, batch_size, pred = loss_batch(model, loss_func, xb, yb, opt)
-            train_loss += loss/batch_size
-            train_accuracy += accuracy_score(yb.numpy(), pred)
             
             if one_cycle:
                 lr, mom = one_cycle.calc()
                 update_lr(opt, lr)
                 update_mom(opt, mom)
-            batch_count += 1
-
-        train_losses.append(train_loss)
-        train_accuracy /= batch_count
-        train_accuracies.append(train_accuracy)
 
         # Validate
         model.eval()
         with torch.no_grad():
             val_loss, val_accuracy = validate(model, valid_dl, loss_func)
-                
+            train_loss, train_accuracy = validate(model, train_dl, loss_func)
+
         val_losses.append(val_loss)
         val_accuracies.append(val_accuracy)
+        train_losses.append(train_loss)
+        train_accuracies.append(train_accuracy)
         
 
         print(
@@ -147,10 +143,13 @@ def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None):
 def validate(model, dl, loss_func):
     mean_loss = 0.0
     predictions = []
+    y_true = []
     for xb, yb in dl: 
         loss, batch_size, pred = loss_batch(model, loss_func, xb, yb)
         mean_loss += loss/batch_size
         predictions.append(pred)
+        y_true.append(yb.numpy())
     predictions = np.concatenate(predictions, axis=0)
-    accuracy = np.mean((predictions == dl.dataset.tensors[1].numpy()))
+    y_true = np.concatenate(y_true, axis=0)
+    accuracy = np.mean((predictions == y_true))
     return mean_loss, accuracy
