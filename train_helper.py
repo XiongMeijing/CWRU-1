@@ -52,6 +52,9 @@ def loss_batch(model, loss_func, xb, yb, opt=None):
                 Loss of the current batch
             len(xb): Int
                 Number of examples of the current batch
+            pred: ndarray
+                Predictions (class with highest probability) of the minibatch 
+                input xb
     '''
     out = model(xb)
     loss = loss_func(out, yb)
@@ -87,14 +90,18 @@ def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None, train
                 See one_cycle.py. Object to calculate and update the learning 
                 rates and momentums at the end of each training iteration (not 
                 epoch) based on the one cycle policy.
+            train_metric: Bool
+                Default is False. If False, the train loss and accuracy will be
+                set to 0.
+                If True, the loss and accuracy of the train set will also be 
+                computed.
 
         Return:
             model: Module
-                Model at the last training step
-            train_losses: List
-                List of the training loss at each epochs.
-            val_losses: List
-                List of the validation loss at each epochs.
+                Trained model.
+            metrics: DataFrame
+                DataFrame which contains the train and validation loss at each
+                epoch.
     '''
     print(
         'EPOCH', '\t', 
