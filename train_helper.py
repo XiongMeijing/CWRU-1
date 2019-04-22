@@ -63,7 +63,7 @@ def loss_batch(model, loss_func, xb, yb, opt=None):
 
     return loss.item(), len(xb), pred
 
-def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None):
+def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None, train_metric=False):
     '''
         Train the NN model and return the model at the final step.
         Lists of the training and validation losses at each epochs are also 
@@ -99,8 +99,8 @@ def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None):
         'EPOCH', '\t', 
         'Train Loss', '\t',
         'Val Loss', '\t', 
-        'Train Accuracy', '\t',
-        'Val Accuracy', '\t')
+        'Train Acc', '\t',
+        'Val Acc', '\t')
     train_losses = []
     train_accuracies = []
     val_losses = []
@@ -110,7 +110,6 @@ def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None):
         model.train()
         train_loss = 0.0
         train_accuracy = 0.0
-        batch_count = 0
         for xb, yb in train_dl:
             loss, batch_size, pred = loss_batch(model, loss_func, xb, yb, opt)
             
@@ -123,7 +122,8 @@ def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None):
         model.eval()
         with torch.no_grad():
             val_loss, val_accuracy = validate(model, valid_dl, loss_func)
-            train_loss, train_accuracy = validate(model, train_dl, loss_func)
+            if train_metric:
+                train_loss, train_accuracy = validate(model, train_dl, loss_func)
 
         val_losses.append(val_loss)
         val_accuracies.append(val_accuracy)
