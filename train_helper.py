@@ -141,14 +141,17 @@ def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None, train
     return model, train_losses, val_losses, val_accuracies
 
 def validate(model, dl, loss_func):
-    mean_loss = 0.0
+    total_loss = 0.0
+    total_size = 0
     predictions = []
     y_true = []
     for xb, yb in dl: 
         loss, batch_size, pred = loss_batch(model, loss_func, xb, yb)
-        mean_loss += loss/batch_size
+        total_loss += loss*batch_size
+        total_size += batch_size
         predictions.append(pred)
         y_true.append(yb.numpy())
+    mean_loss = total_loss / total_size
     predictions = np.concatenate(predictions, axis=0)
     y_true = np.concatenate(y_true, axis=0)
     accuracy = np.mean((predictions == y_true))
