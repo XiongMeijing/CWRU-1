@@ -102,10 +102,13 @@ def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None, train
         'Val Loss', '\t', 
         'Train Acc', '\t',
         'Val Acc', '\t')
-    train_losses = []
-    train_accuracies = []
-    val_losses = []
-    val_accuracies = []
+    # Initialize dic to store metrics for each epoch.
+    metrics_dic = {}
+    metrics_dic['train_loss'] = []
+    metrics_dic['train_accuracy'] = []
+    metrics_dic['val_loss'] = []
+    metrics_dic['val_accuracy'] = []
+    
     for epoch in range(epochs):
         # Train
         model.train()
@@ -126,10 +129,10 @@ def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None, train
             if train_metric:
                 train_loss, train_accuracy = validate(model, train_dl, loss_func)
 
-        val_losses.append(val_loss)
-        val_accuracies.append(val_accuracy)
-        train_losses.append(train_loss)
-        train_accuracies.append(train_accuracy)
+        metrics_dic['val_loss'].append(val_loss)
+        metrics_dic['val_accuracy'].append(val_accuracy)
+        metrics_dic['train_loss'].append(train_loss)
+        metrics_dic['train_accuracy'].append(train_accuracy)
         
         print(
             f'{epoch} \t', 
@@ -138,12 +141,6 @@ def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None, train
             f'{train_accuracy:.05f}', '\t'
             f'{val_accuracy:.05f}', '\t')
         
-    metrics_dic = {
-        "train losses": train_losses,
-        "train accuracies": train_accuracies,
-        "val losses": val_losses,
-        "val accuracies": val_accuracies,
-    }
     metrics = pd.DataFrame.from_dict(metrics_dic)
 
     return model, metrics
