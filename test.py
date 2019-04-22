@@ -61,4 +61,4 @@ if __name__ == "__main__":
 
     model = nn_model.CNN_1D_2L(len(features))
     opt = optim.Adam(model.parameters(), lr=lr/10, betas=(0.9, 0.999), weight_decay=wd)
-    model = fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=onecycle)
+    model = fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=onecycle, train_metric=True)
