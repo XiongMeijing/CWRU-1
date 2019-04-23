@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import filedialog
 from tkinter import *
 
 LARGE_FONT= ("Verdana", 12)
@@ -33,7 +34,6 @@ class SeaofBTCapp(tk.Tk):
         frame = self.frames[cont]
         frame.tkraise()
 
-        
 class StartPage(tk.Frame):
 
     def __init__(self, parent, controller):
@@ -49,8 +49,22 @@ class StartPage(tk.Frame):
                             command=lambda: controller.show_frame(PageTwo))
         button2.pack()
 
-        frame1 = tk.Frame(self, height=500, width=500)
-        frame1.pack()
+        labelframe = tk.LabelFrame(self, text="labeled frame")
+        labelframe.pack()
+        scrollbar = tk.Scrollbar(labelframe)
+        scrollbar.pack(side=RIGHT, fill = Y)
+        self.listbox = tk.Listbox(labelframe, height=10, width=50, yscrollcommand = scrollbar.set)
+        self.listbox.pack()
+        scrollbar.config( command = self.listbox.yview )
+
+        button3 = tk.Button(self, text="Open",
+                            command=self.select_files)
+        button3.pack()
+
+    def select_files(self):
+        filenames = filedialog.askopenfilenames()
+        for i, filename in enumerate(filenames):
+            self.listbox.insert(i, filename)
 
 
 class PageOne(tk.Frame):
