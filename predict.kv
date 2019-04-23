@@ -6,18 +6,6 @@
     size: 160, 20
 
 
-<LoadDialog>:
-    BoxLayout:
-        size: root.size
-        pos: root.pos
-        orientation: "vertical"
-        FileBrowser:
-            id: filechooser
-            path: "C:/Users/A800005316"
-            on_success: root.load(filechooser.path, filechooser.selection)
-            on_canceled: root.cancel()
-
-
 <Main>
     prediction_display: prediction
     orientation: "vertical"

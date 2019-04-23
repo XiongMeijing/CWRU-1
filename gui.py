@@ -23,9 +23,6 @@ class Model:
     def export(self):
         print('Model export method')
 
-class LoadDialog(FloatLayout):
-    load = ObjectProperty(None)
-    cancel = ObjectProperty(None)
 
 class Main(BoxLayout):
 
@@ -60,10 +57,6 @@ class Main(BoxLayout):
             # FileGroup(name="Image Files", extensions=["jpg", "jpeg", "png", "gif"]),
         ],
         ).show()
-        # content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
-        # self._popup = Popup(title="Load file", content=content,
-        #                     size_hint=(0.9, 0.9))
-        # self._popup.open()
     
     def load(self, path, filename):
         # with open(os.path.join(path, filename[0])) as stream:
