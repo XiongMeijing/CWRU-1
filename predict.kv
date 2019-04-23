@@ -3,12 +3,12 @@
 
 <CustButton@Button>:
     font_size: 14
-    size: 160, 20
+    size: 100, 16
 
 
 <Main>
     prediction_display: prediction
-    orientation: "vertical"
+    orientation: "horizontal"
     padding: 10
     spacing: 5
     canvas.before:
@@ -19,47 +19,51 @@
             pos: self.pos
             size: self.size
 
-    GridLayout:
-        cols: 1
-        size_hint: 0.3, 0.5
-        spacing: 5
-        pos_hint: {'center_x': 0.5, 'y': 1}
-        #orientation: 'vertical'
-        Button:
-            text: 'Load'
-            on_release: root.show_load()
+    BoxLayout:
+        orientation: "vertical"
+        GridLayout:
+            cols: 1
+            size_hint: 0.3, 0.2
+            spacing: 5
+            pos_hint: {'center_x': 0.5, 'y': 1}
+            #orientation: 'vertical'
+            Button:
+                text: 'Load'
+                on_release: root.show_load()
 
-        CustButton:
-            on_release: root.export(self)
-            text: 'Export'
+            CustButton:
+                on_release: root.export(self)
+                text: 'Export'
 
-        CustButton:
-            on_release: root.predict(self)
-            text: 'Predict'
+            CustButton:
+                on_release: root.predict(self)
+                text: 'Predict'
 
-        CustButton:
-            on_release: root.save_png(self)
-            text: 'Save'
+            CustButton:
+                on_release: root.save_png(self)
+                text: 'Save'
 
-    GridLayout:
-        cols: 1
-        size_hint: 1, 0.5
-        pos_hint: {'center_x': .5, 'center_y': .5}
-        Label:
+        GridLayout:
+            cols: 1
             size_hint: 1, 0.5
-            font_size: 28
-            text: 'The digit on the image is:'
-        Label:
-            canvas.before:
-                Color:
-                    rgb: 0.1, 0.8, 0.8
-                Rectangle:
-                    # self here refers to the widget
-                    pos: self.pos
-                    size: self.size
-            font_size: 68
-            id: prediction
-            text: ''
-            valign: 'top'
+            pos_hint: {'center_x': .5, 'center_y': .5}
+            Label:
+                size_hint: 1, 0.5
+                font_size: 28
+                text: 'The digit on the image is:'
+            Label:
+                font_size: 16
+                id: prediction
+                text: ''
+                valign: 'top'
+                canvas.before:
+                    Color:
+                        rgb: 0.1, 0.8, 0.8
+                    Rectangle:
+                        # self here refers to the widget
+                        pos: self.pos
+                        size: self.size
+
+        
 
 
