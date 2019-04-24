@@ -2,6 +2,11 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import *
 
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.figure import Figure
+
 LARGE_FONT= ("Verdana", 12)
 
 
@@ -34,25 +39,20 @@ class SeaofBTCapp(tk.Tk):
         frame = self.frames[cont]
         frame.tkraise()
 
-class StartPage(tk.Frame):
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self,parent)
-        label = tk.Label(self, text="Start Page", font=LARGE_FONT)
-        label.pack(pady=10,padx=10)
-
-        labelframe = tk.LabelFrame(self, text="labeled frame")
-        labelframe.pack()
-        scrollbar = tk.Scrollbar(labelframe)
+class ListViewFrame(tk.LabelFrame):
+    
+    def __init__(self, parent, **kwargs):
+        super().__init__(parent, **kwargs)
+        scrollbar = tk.Scrollbar(self)
         self.listbox = tk.Listbox(
-            labelframe, 
+            self, 
             height=10, 
             width=50, 
             selectmode=EXTENDED,
             yscrollcommand = scrollbar.set,)
         self.listbox.grid(row=1, column=1)
         self.listbox2 = tk.Listbox(
-            labelframe, 
+            self, 
             height=10, 
             width=20, 
             selectmode=EXTENDED,
@@ -61,19 +61,6 @@ class StartPage(tk.Frame):
 
         scrollbar.grid(row=1, column=3, rowspan=1, sticky=N+S+W)
         scrollbar.config( command = self.yview )
-
-        button_frame = tk.Frame(self)
-        button_frame.pack()
-        
-        button3 = tk.Button(button_frame, text="Open",
-                            command=self.select_files)
-        button3.grid(row=1, column=1, rowspan=1)
-        button4 = tk.Button(button_frame, text="Delete All",
-                            command=self.delete_list_all)
-        button4.grid(row=1, column=2, rowspan=1)
-        button5 = tk.Button(button_frame, text="Delete",
-                            command=self.delete_list_selected)
-        button5.grid(row=1, column=3, rowspan=1)
 
     def yview(self, *args):
         self.listbox.yview(*args)
@@ -101,6 +88,31 @@ class StartPage(tk.Frame):
 
     def get_list_selection(self):
         return self.listbox.curselection()
+
+class StartPage(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self,parent)
+        label = tk.Label(self, text="Start Page", font=LARGE_FONT)
+        label.pack(pady=10,padx=10)
+
+        labelframe = ListViewFrame(self, text="labeled frame")
+        labelframe.pack()
+
+        button_frame = tk.Frame(self)
+        button_frame.pack()
+        
+        button3 = tk.Button(button_frame, text="Open",
+                            command=labelframe.select_files)
+        button3.grid(row=1, column=1, rowspan=1)
+        button4 = tk.Button(button_frame, text="Delete All",
+                            command=labelframe.delete_list_all)
+        button4.grid(row=1, column=2, rowspan=1)
+        button5 = tk.Button(button_frame, text="Delete",
+                            command=labelframe.delete_list_selected)
+        button5.grid(row=1, column=3, rowspan=1)
+
+
 
 
 class PageOne(tk.Frame):
