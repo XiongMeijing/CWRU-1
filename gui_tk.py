@@ -4,8 +4,10 @@ from tkinter import *
 
 import matplotlib
 matplotlib.use("TkAgg")
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
+from matplotlib import style
+style.use('ggplot')
 
 LARGE_FONT= ("Verdana", 12)
 
@@ -112,7 +114,35 @@ class StartPage(tk.Frame):
                             command=labelframe.delete_list_selected)
         button5.grid(row=1, column=3, rowspan=1)
 
+        plotframe = PlotFrame(self)
+        plotframe.pack(fill=Y)
 
+
+class PlotFrame(tk.Frame):
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.f = Figure(figsize=(5,5), dpi=100)
+        self.a = self.f.add_subplot(111)
+        label = tk.Label(self, text="Graph Page!", font=LARGE_FONT)
+        label.pack(pady=10,padx=10)
+
+        self.canvas = FigureCanvasTkAgg(self.f, self)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+
+        toolbar = NavigationToolbar2Tk(self.canvas, self)
+        toolbar.update()
+        self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+        draw_button = Button(self, text="Draw Something",
+                             command=self.plot_something)
+        draw_button.pack()
+
+    def plot_something(self):
+        self.a.clear()
+        self.a.plot([1,2,3,4,5,6,7,8],[5,6,1,3,8,9,3,5])
+        self.canvas.draw()
 
 
 class PageOne(tk.Frame):
