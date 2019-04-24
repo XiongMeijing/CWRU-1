@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import *
 
+import numpy as np
 import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -96,13 +97,13 @@ class StartPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self,parent)
         label = tk.Label(self, text="Start Page", font=LARGE_FONT)
-        label.pack(pady=10,padx=10)
+        label.grid(row=1, column=1, pady=10,padx=10)
 
         labelframe = ListViewFrame(self, text="labeled frame")
-        labelframe.pack()
+        labelframe.grid(row=2, column=1, pady=10,padx=10)
 
         button_frame = tk.Frame(self)
-        button_frame.pack()
+        button_frame.grid(row=3, column=1, pady=10,padx=10)
         
         button3 = tk.Button(button_frame, text="Open",
                             command=labelframe.select_files)
@@ -115,7 +116,7 @@ class StartPage(tk.Frame):
         button5.grid(row=1, column=3, rowspan=1)
 
         plotframe = PlotFrame(self)
-        plotframe.pack(fill=Y)
+        plotframe.grid(row=1, column=2, rowspan=3)
 
 
 class PlotFrame(tk.Frame):
@@ -141,7 +142,7 @@ class PlotFrame(tk.Frame):
 
     def plot_something(self):
         self.a.clear()
-        self.a.plot([1,2,3,4,5,6,7,8],[5,6,1,3,8,9,3,5])
+        self.a.plot(np.array([1,2,3,4,5,6,7,8]),np.random.randn(8))
         self.canvas.draw()
 
 
