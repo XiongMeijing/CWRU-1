@@ -41,30 +41,66 @@ class StartPage(tk.Frame):
         label = tk.Label(self, text="Start Page", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
 
-        button = tk.Button(self, text="Visit Page 1",
-                            command=lambda: controller.show_frame(PageOne))
-        button.pack()
-
-        button2 = tk.Button(self, text="Visit Page 2",
-                            command=lambda: controller.show_frame(PageTwo))
-        button2.pack()
-
         labelframe = tk.LabelFrame(self, text="labeled frame")
         labelframe.pack()
         scrollbar = tk.Scrollbar(labelframe)
-        scrollbar.pack(side=RIGHT, fill = Y)
-        self.listbox = tk.Listbox(labelframe, height=10, width=50, yscrollcommand = scrollbar.set)
-        self.listbox.pack()
-        scrollbar.config( command = self.listbox.yview )
+        self.listbox = tk.Listbox(
+            labelframe, 
+            height=10, 
+            width=50, 
+            selectmode=EXTENDED,
+            yscrollcommand = scrollbar.set,)
+        self.listbox.grid(row=1, column=1)
+        self.listbox2 = tk.Listbox(
+            labelframe, 
+            height=10, 
+            width=20, 
+            selectmode=EXTENDED,
+            yscrollcommand = scrollbar.set,)
+        self.listbox2.grid(row=1, column=2)
 
-        button3 = tk.Button(self, text="Open",
+        scrollbar.grid(row=1, column=3, rowspan=1, sticky=N+S+W)
+        scrollbar.config( command = self.yview )
+
+        button_frame = tk.Frame(self)
+        button_frame.pack()
+        
+        button3 = tk.Button(button_frame, text="Open",
                             command=self.select_files)
-        button3.pack()
+        button3.grid(row=1, column=1, rowspan=1)
+        button4 = tk.Button(button_frame, text="Delete All",
+                            command=self.delete_list_all)
+        button4.grid(row=1, column=2, rowspan=1)
+        button5 = tk.Button(button_frame, text="Delete",
+                            command=self.delete_list_selected)
+        button5.grid(row=1, column=3, rowspan=1)
+
+    def yview(self, *args):
+        self.listbox.yview(*args)
+        self.listbox2.yview(*args)
 
     def select_files(self):
         filenames = filedialog.askopenfilenames()
         for i, filename in enumerate(filenames):
             self.listbox.insert(i, filename)
+            self.listbox2.insert(i, filename)
+
+    def delete_list_all(self):
+        self.listbox.delete(0, END)
+        self.listbox2.delete(0, END)
+
+    def delete_list_selected(self):
+        # Each time listbox.delete method is called, the index of the listbox is
+        # reset. Hence the index of the selected item needs to be corrected by
+        # subtracting the count of deleted items.
+        count = 0
+        for item in self.get_list_selection():
+            self.listbox.delete(item - count)
+            self.listbox2.delete(item - count)
+            count += 1
+
+    def get_list_selection(self):
+        return self.listbox.curselection()
 
 
 class PageOne(tk.Frame):
