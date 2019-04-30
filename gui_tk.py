@@ -6,14 +6,18 @@ import tkinter.ttk as ttk
 from pathlib import Path
 import scipy.io
 import numpy as np
+import pandas as pd
 import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 from matplotlib import style
 style.use('ggplot')
+import nn_model
+
 
 LARGE_FONT= ("Verdana", 12)
+
 
 def rename_matfile_keys(dic):
     '''
@@ -36,7 +40,43 @@ def mat_to_ndarray(matfile_path):
     rename_matfile_keys(matfile_dic)
     return matfile_dic['DE_time']
 
+def preprocess_signal(array, segment_length):
+    array = normalize_signal_array(array)
+    return divide_signal_array(array, segment_length)
 
+def normalize_signal_array(array):
+    mean = np.mean(array)
+    std = np.std(array)
+    return (array - mean) / std
+
+def divide_signal_array(array, segment_length):
+    '''
+    This function divide the signal into segments, each with a specific number of points as
+    defined by segment_length. Each segment will be added as an example (a row) in the 
+    returned DataFrame. Thus it increases the number of training examples. The remaining 
+    points which are less than segment_length are discarded.
+    
+    Parameter:
+        array: 
+            Numpy array which contains the signal sample points
+        segment_length: 
+            Number of points per segment.
+    Return:
+        DataFrame with segmented signals and their corresponding filename
+    '''
+    dic = {}
+    idx = 0
+    n_sample_points = len(array)
+    n_segments = n_sample_points // segment_length
+    for segment in range(n_segments):
+        dic[idx] = {
+            'signal': array[segment_length * segment:segment_length * (segment+1)], 
+        }
+        idx += 1
+    df_tmp = pd.DataFrame.from_dict(dic,orient='index')
+    return np.hstack(df_tmp["signal"].values).T
+    # return pd.concat([df_tmp[['label', 'filename']], pd.DataFrame(np.hstack(df_tmp["signal"].values).T)], axis=1 )    
+        
 class SeaofBTCapp(tk.Tk):
 
     def __init__(self, *args, **kwargs):
@@ -192,8 +232,6 @@ class PlotFrame(ttk.Frame):
                              command=parent.plot_something)
         draw_button.pack()
 
-    
-        
 class Model:
     def __init__(self):
         self.data = {}
@@ -201,12 +239,15 @@ class Model:
         self.data['filepaths'] = []
         self.data['signals'] = []
         self.data['prediction'] = []
+        self.pred_model = nn_model.CNN_1D_2L(500)
+        self.pred_model.load_state_dict(torch.load(save_model_path / 'model.pth'))
+        self.pred_model.eval()
 
     def get_signal(self, file_index):
-        return self.data['filenames'][index], self.data['signals'][index]
+        return self.data['filenames'][file_index], self.data['signals'][file_index]
 
     def predict(self, file_index):
-        pass
+        x = self.data['signals'][file_index]
 
     def read_files(self, filepaths):
         for filepath in filepaths:
@@ -221,11 +262,7 @@ class Model:
 
 
 if __name__ == "__main__":
-    app = SeaofBTCapp()
-    app.mainloop()
-    # testpath = Path(r'C:\Users\A800005316\Desktop\Study\02_Automation of QA with Machine Learning\Experiments\CWRU\Data\12k_DE\B007_0.mat')
-    # print(testpath)
-    # arr = mat_to_ndarray(testpath)
-    # print(arr.shape)
-    # model = Model()
-    # model.predict(["a"])
+    # app = SeaofBTCapp()
+    # app.mainloop()
+    testarr = np.array(range(50)).reshape(-1,1)
+    print(preprocess_signal(testarr, 8))
