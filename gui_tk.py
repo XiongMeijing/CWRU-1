@@ -81,7 +81,7 @@ def divide_signal_array(array, segment_length):
     return np.hstack(df_tmp["signal"].values).T
     # return pd.concat([df_tmp[['label', 'filename']], pd.DataFrame(np.hstack(df_tmp["signal"].values).T)], axis=1 )    
         
-class SeaofBTCapp(tk.Tk):
+class MainApp(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         
@@ -281,7 +281,7 @@ class Model:
 
 
 if __name__ == "__main__":
-    app = SeaofBTCapp()
+    app = MainApp()
     app.mainloop()
     # testarr = np.array(range(50)).reshape(-1,1)
     # print(preprocess_signal(testarr, 8))
