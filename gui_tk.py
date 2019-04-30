@@ -14,8 +14,12 @@ from matplotlib.figure import Figure
 from matplotlib import style
 style.use('ggplot')
 import nn_model
-
-
+import torch
+from torch import nn
+from torch.nn import functional as F
+from torch import Tensor
+from pathlib import Path
+save_model_path = Path("./Model")
 LARGE_FONT= ("Verdana", 12)
 
 
@@ -161,6 +165,10 @@ class StartPage(tk.Frame):
                             command=self.delete_list_selected)
         button5.grid(row=1, column=3, rowspan=1)
 
+        button_pred = ttk.Button(button_frame, text="Predict",
+                            command=self.make_prediction)
+        button_pred.grid(row=1, column=4, rowspan=1)
+
         self.plotframe = PlotFrame(self)
         self.plotframe.grid(row=1, column=2, rowspan=3)
 
@@ -169,9 +177,9 @@ class StartPage(tk.Frame):
         filenames = self.model.read_files(paths)
         self.labelframe.listbox.delete(0,END)
         self.labelframe.listbox2.delete(0,END)
-        for i, filename in enumerate(self.model.data['filenames']):
+        for i, (filename, pred) in enumerate(zip(self.model.data['filenames'], self.model.data['prediction'])):
             self.labelframe.listbox.insert(i, filename)
-            self.labelframe.listbox2.insert(i, filename)
+            self.labelframe.listbox2.insert(i, pred)
 
     def delete_list_all(self):
         for k,v in self.model.data.items():
@@ -210,6 +218,12 @@ class StartPage(tk.Frame):
         except Exception as e:
             print(e)
 
+    def make_prediction(self):
+        pred_indices = self.get_list_selection()
+        for pred_index in pred_indices:
+            self.model.predict(pred_index)
+            self.labelframe.listbox2.insert(pred_index, self.model.data['prediction'][pred_index])
+            self.labelframe.listbox2.delete(pred_index + 1)
 
 class PlotFrame(ttk.Frame):
 
@@ -248,21 +262,26 @@ class Model:
 
     def predict(self, file_index):
         x = self.data['signals'][file_index]
+        x = preprocess_signal(x, 500)
+        x = torch.tensor(x, dtype=torch.float32)
+        out = self.pred_model(x)
+        pred = torch.argmax(out, dim=1)
+        mode, _ = torch.mode(pred, dim=0)
+        self.data['prediction'][file_index] = mode.item()
 
     def read_files(self, filepaths):
         for filepath in filepaths:
             file_name = str(filepath).split('/')[-1]
             self.data['filenames'].append(file_name)
             self.data['filepaths'].append(Path(filepath))
-            ## TODO mat_to_ndarray
             self.data['signals'].append(mat_to_ndarray(Path(filepath)))
-            self.data['prediction'].append('placeholder')
+            self.data['prediction'].append('None')
         return self.data['filenames']
 
 
 
 if __name__ == "__main__":
-    # app = SeaofBTCapp()
-    # app.mainloop()
-    testarr = np.array(range(50)).reshape(-1,1)
-    print(preprocess_signal(testarr, 8))
+    app = SeaofBTCapp()
+    app.mainloop()
+    # testarr = np.array(range(50)).reshape(-1,1)
+    # print(preprocess_signal(testarr, 8))
