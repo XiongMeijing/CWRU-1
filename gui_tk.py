@@ -100,6 +100,7 @@ class MainApp(tk.Tk):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
+        startpage_controller = StartPageController(self.frames[StartPage])
         self.show_frame(StartPage)
 
     def show_frame(self, cont):
@@ -140,6 +141,65 @@ class ListViewFrame(ttk.LabelFrame):
         self.listbox2.yview(*args)
 
 
+class StartPageController:
+    def __init__(self, page):
+        self.page = page
+        self.model = Model()
+        self.page.button3.config(command=self.select_files)
+        self.page.button4.config(command=self.delete_list_all)
+        self.page.button5.config(command=self.delete_list_selected)
+        self.page.button_pred.config(command=self.make_prediction)
+        self.page.plotframe.draw_button.config(command=self.plot_something)
+
+    def select_files(self):
+        paths = filedialog.askopenfilenames()
+        filenames = self.model.read_files(paths)
+        self.page.labelframe.listbox.delete(0,END)
+        self.page.labelframe.listbox2.delete(0,END)
+        for i, (filename, pred) in enumerate(zip(self.model.data['filenames'], self.model.data['prediction'])):
+            self.page.labelframe.listbox.insert(i, filename)
+            self.page.labelframe.listbox2.insert(i, pred)
+
+    def delete_list_all(self):
+        for k,v in self.model.data.items():
+            self.model.data[k] = []
+        self.page.labelframe.listbox.delete(0, END)
+        self.page.labelframe.listbox2.delete(0, END)
+
+    def delete_list_selected(self):
+        # Each time listbox.delete method is called, the index of the listbox is
+        # reset. Hence the index of the selected item needs to be corrected by
+        # subtracting the count of deleted items.
+        del_indices = self.get_list_selection()
+        count = 0
+        for del_idx in del_indices:
+            for k,v in self.model.data.items():
+                v.pop(del_idx - count)
+            
+            self.page.labelframe.listbox.delete(del_idx - count)
+            self.page.labelframe.listbox2.delete(del_idx - count)
+            count += 1
+
+    def get_list_selection(self):
+        return self.page.labelframe.listbox.curselection()
+
+    def plot_something(self):
+        try:
+            idx = self.get_list_selection()
+            idx = idx[0]
+            arr = self.model.data['signals'][idx]
+            self.page.plotframe.a.clear()
+            self.page.plotframe.a.plot(arr)
+            self.page.plotframe.canvas.draw()
+        except Exception as e:
+            print(e)
+
+    def make_prediction(self):
+        pred_indices = self.get_list_selection()
+        for pred_index in pred_indices:
+            self.model.predict(pred_index)
+            self.page.labelframe.listbox2.insert(pred_index, self.model.data['prediction'][pred_index])
+            self.page.labelframe.listbox2.delete(pred_index + 1)
 
 class StartPage(tk.Frame):
 
@@ -152,78 +212,22 @@ class StartPage(tk.Frame):
         self.labelframe = ListViewFrame(self, text="labeled frame")
         self.labelframe.grid(row=2, column=1, pady=10,padx=10)
 
-        button_frame = ttk.Frame(self)
-        button_frame.grid(row=3, column=1, pady=10,padx=10)
+        self.button_frame = ttk.Frame(self)
+        self.button_frame.grid(row=3, column=1, pady=10,padx=10)
         
-        button3 = ttk.Button(button_frame, text="Open",
-                            command=self.select_files)
-        button3.grid(row=1, column=1, rowspan=1)
-        button4 = ttk.Button(button_frame, text="Delete All",
-                            command=self.delete_list_all)
-        button4.grid(row=1, column=2, rowspan=1)
-        button5 = ttk.Button(button_frame, text="Delete",
-                            command=self.delete_list_selected)
-        button5.grid(row=1, column=3, rowspan=1)
-
-        button_pred = ttk.Button(button_frame, text="Predict",
-                            command=self.make_prediction)
-        button_pred.grid(row=1, column=4, rowspan=1)
+        self.button3 = ttk.Button(self.button_frame, text="Open")
+        self.button3.grid(row=1, column=1, rowspan=1)
+        self.button4 = ttk.Button(self.button_frame, text="Delete All")
+        self.button4.grid(row=1, column=2, rowspan=1)
+        self.button5 = ttk.Button(self.button_frame, text="Delete")
+        self.button5.grid(row=1, column=3, rowspan=1)
+        self.button_pred = ttk.Button(self.button_frame, text="Predict")
+        self.button_pred.grid(row=1, column=4, rowspan=1)
 
         self.plotframe = PlotFrame(self)
         self.plotframe.grid(row=1, column=2, rowspan=3)
 
-    def select_files(self):
-        paths = filedialog.askopenfilenames()
-        filenames = self.model.read_files(paths)
-        self.labelframe.listbox.delete(0,END)
-        self.labelframe.listbox2.delete(0,END)
-        for i, (filename, pred) in enumerate(zip(self.model.data['filenames'], self.model.data['prediction'])):
-            self.labelframe.listbox.insert(i, filename)
-            self.labelframe.listbox2.insert(i, pred)
 
-    def delete_list_all(self):
-        for k,v in self.model.data.items():
-            self.model.data[k] = []
-        self.labelframe.listbox.delete(0, END)
-        self.labelframe.listbox2.delete(0, END)
-
-    def delete_list_selected(self):
-        # Each time listbox.delete method is called, the index of the listbox is
-        # reset. Hence the index of the selected item needs to be corrected by
-        # subtracting the count of deleted items.
-        del_indices = self.get_list_selection()
-        
-        count = 0
-        for del_idx in del_indices:
-            for k,v in self.model.data.items():
-                v.pop(del_idx - count)
-            
-            self.labelframe.listbox.delete(del_idx - count)
-            self.labelframe.listbox2.delete(del_idx - count)
-            count += 1
-
-    def get_list_selection(self):
-        return self.labelframe.listbox.curselection()
-
-    def plot_something(self):
-        try:
-            idx = self.get_list_selection()
-            idx = idx[0]
-            
-            arr = self.model.data['signals'][idx]
-            
-            self.plotframe.a.clear()
-            self.plotframe.a.plot(arr)
-            self.plotframe.canvas.draw()
-        except Exception as e:
-            print(e)
-
-    def make_prediction(self):
-        pred_indices = self.get_list_selection()
-        for pred_index in pred_indices:
-            self.model.predict(pred_index)
-            self.labelframe.listbox2.insert(pred_index, self.model.data['prediction'][pred_index])
-            self.labelframe.listbox2.delete(pred_index + 1)
 
 class PlotFrame(ttk.Frame):
 
@@ -242,9 +246,8 @@ class PlotFrame(ttk.Frame):
         toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        draw_button = ttk.Button(self, text="Draw Something",
-                             command=parent.plot_something)
-        draw_button.pack()
+        self.draw_button = ttk.Button(self, text="Draw Something")
+        self.draw_button.pack()
 
 class Model:
     def __init__(self):
