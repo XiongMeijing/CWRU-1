@@ -1,5 +1,7 @@
-from gui_core.model import Model
+import gui_core.model as model
 from tkinter import *
+
+Model = model.CNN_1D
 
 class StartPageController:
     def __init__(self, page):
@@ -57,6 +59,6 @@ class StartPageController:
     def get_predictions(self):
         pred_indices = self.get_list_selection()
         for pred_index in pred_indices:
-            self.model.predict(pred_index)
+            self.model.update_prediction(pred_index)
             self.page.labelframe.lb_predictions.insert(pred_index, self.model.data['prediction'][pred_index])
             self.page.labelframe.lb_predictions.delete(pred_index + 1)
