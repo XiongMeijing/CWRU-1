@@ -108,63 +108,59 @@ class MainApp(tk.Tk):
         frame = self.frames[cont]
         frame.tkraise()
 
-    def update_listview(self, filepaths):
-        filenames = self.model.read_files(filepaths)
-        return filenames
-
 
 class ListViewFrame(ttk.LabelFrame):
     
     def __init__(self, parent, **kwargs):
         super().__init__(parent, **kwargs)
         scrollbar = ttk.Scrollbar(self)
-        self.listbox = tk.Listbox(
+        self.lb_filenames = tk.Listbox(
             self, 
-            height=10, 
+            height=30, 
             width=50, 
             selectmode=EXTENDED,
             yscrollcommand = scrollbar.set,)
-        self.listbox.grid(row=1, column=1)
-        self.listbox2 = tk.Listbox(
+        self.lb_filenames.grid(row=1, column=1)
+        self.lb_predictions = tk.Listbox(
             self, 
-            height=10, 
+            height=30, 
             width=20, 
             selectmode=EXTENDED,
             yscrollcommand = scrollbar.set,)
-        self.listbox2.grid(row=1, column=2)
+        self.lb_predictions.grid(row=1, column=2)
 
         scrollbar.grid(row=1, column=3, rowspan=1, sticky=N+S+W)
         scrollbar.config( command = self.yview )
 
     def yview(self, *args):
-        self.listbox.yview(*args)
-        self.listbox2.yview(*args)
+        self.lb_filenames.yview(*args)
+        self.lb_predictions.yview(*args)
 
 
 class StartPageController:
     def __init__(self, page):
         self.page = page
         self.model = Model()
-        self.page.button3.config(command=self.select_files)
-        self.page.button4.config(command=self.delete_list_all)
-        self.page.button5.config(command=self.delete_list_selected)
+        self.page.button_open.config(command=self.select_files)
+        self.page.button_del_all.config(command=self.delete_list_all)
+        self.page.button_del_selected.config(command=self.delete_list_selected)
         self.page.button_pred.config(command=self.make_prediction)
         self.page.plotframe.draw_button.config(command=self.plot_something)
 
     def select_files(self):
         paths = filedialog.askopenfilenames()
         filenames = self.model.read_files(paths)
-        self.page.labelframe.listbox.delete(0,END)
-        self.page.labelframe.listbox2.delete(0,END)
+        self.page.labelframe.lb_filenames.delete(0,END)
+        self.page.labelframe.lb_predictions.delete(0,END)
         for i, (filename, pred) in enumerate(zip(self.model.data['filenames'], self.model.data['prediction'])):
-            self.page.labelframe.listbox.insert(i, filename)
-            self.page.labelframe.listbox2.insert(i, pred)
+            self.page.labelframe.lb_filenames.insert(i, filename)
+            self.page.labelframe.lb_predictions.insert(i, pred)
 
     def delete_list_all(self):
         for k,v in self.model.data.items():
             self.model.data[k] = []
-        self.page.labelframe.listbox.delete(0, END)
-        self.page.labelframe.listbox2.delete(0, END)
+        self.page.labelframe.lb_filenames.delete(0, END)
+        self.page.labelframe.lb_predictions.delete(0, END)
 
     def delete_list_selected(self):
         # Each time listbox.delete method is called, the index of the listbox is
@@ -176,12 +172,12 @@ class StartPageController:
             for k,v in self.model.data.items():
                 v.pop(del_idx - count)
             
-            self.page.labelframe.listbox.delete(del_idx - count)
-            self.page.labelframe.listbox2.delete(del_idx - count)
+            self.page.labelframe.lb_filenames.delete(del_idx - count)
+            self.page.labelframe.lb_predictions.delete(del_idx - count)
             count += 1
 
     def get_list_selection(self):
-        return self.page.labelframe.listbox.curselection()
+        return self.page.labelframe.lb_filenames.curselection()
 
     def plot_something(self):
         try:
@@ -198,8 +194,8 @@ class StartPageController:
         pred_indices = self.get_list_selection()
         for pred_index in pred_indices:
             self.model.predict(pred_index)
-            self.page.labelframe.listbox2.insert(pred_index, self.model.data['prediction'][pred_index])
-            self.page.labelframe.listbox2.delete(pred_index + 1)
+            self.page.labelframe.lb_predictions.insert(pred_index, self.model.data['prediction'][pred_index])
+            self.page.labelframe.lb_predictions.delete(pred_index + 1)
 
 class StartPage(tk.Frame):
 
@@ -210,17 +206,17 @@ class StartPage(tk.Frame):
         label.grid(row=1, column=1, pady=10,padx=10)
 
         self.labelframe = ListViewFrame(self, text="labeled frame")
-        self.labelframe.grid(row=2, column=1, pady=10,padx=10)
+        self.labelframe.grid(row=2, column=1, pady=10,padx=10, sticky=NSEW)
 
         self.button_frame = ttk.Frame(self)
         self.button_frame.grid(row=3, column=1, pady=10,padx=10)
         
-        self.button3 = ttk.Button(self.button_frame, text="Open")
-        self.button3.grid(row=1, column=1, rowspan=1)
-        self.button4 = ttk.Button(self.button_frame, text="Delete All")
-        self.button4.grid(row=1, column=2, rowspan=1)
-        self.button5 = ttk.Button(self.button_frame, text="Delete")
-        self.button5.grid(row=1, column=3, rowspan=1)
+        self.button_open = ttk.Button(self.button_frame, text="Open")
+        self.button_open.grid(row=1, column=1, rowspan=1)
+        self.button_del_all = ttk.Button(self.button_frame, text="Delete All")
+        self.button_del_all.grid(row=1, column=2, rowspan=1)
+        self.button_del_selected = ttk.Button(self.button_frame, text="Delete")
+        self.button_del_selected.grid(row=1, column=3, rowspan=1)
         self.button_pred = ttk.Button(self.button_frame, text="Predict")
         self.button_pred.grid(row=1, column=4, rowspan=1)
 
