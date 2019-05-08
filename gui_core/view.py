@@ -19,7 +19,7 @@ class StartPage(tk.Frame):
         label = tk.Label(self, text="Start Page", font=LARGE_FONT)
         label.grid(row=1, column=1, pady=10,padx=10)
 
-        self.labelframe = ListViewFrame(self, text="labeled frame")
+        self.labelframe = ListViewFrame(self, text="Files")
         self.labelframe.grid(row=2, column=1, pady=10,padx=10, sticky=NSEW)
 
         self.button_frame = ttk.Frame(self)
@@ -42,6 +42,11 @@ class ListViewFrame(ttk.LabelFrame):
     
     def __init__(self, parent, **kwargs):
         super().__init__(parent, **kwargs)
+        label_fn = tk.Label(self, text="Filenames")
+        label_fn.grid(row=1, column=1, pady=5,padx=5)
+        label_pred = tk.Label(self, text="Predictions")
+        label_pred.grid(row=1, column=2, pady=5,padx=5)
+        
         scrollbar = ttk.Scrollbar(self)
         self.lb_filenames = tk.Listbox(
             self, 
@@ -49,21 +54,29 @@ class ListViewFrame(ttk.LabelFrame):
             width=50, 
             selectmode=EXTENDED,
             yscrollcommand = scrollbar.set,)
-        self.lb_filenames.grid(row=1, column=1)
+        self.lb_filenames.grid(row=2, column=1)
         self.lb_predictions = tk.Listbox(
             self, 
             height=30, 
             width=20, 
             selectmode=EXTENDED,
             yscrollcommand = scrollbar.set,)
-        self.lb_predictions.grid(row=1, column=2)
-
-        scrollbar.grid(row=1, column=3, rowspan=1, sticky=N+S+W)
+        self.lb_predictions.grid(row=2, column=2)
+        self.lb_filenames.bind("<MouseWheel>", self.on_mouse_wheel)
+        self.lb_predictions.bind("<MouseWheel>", self.on_mouse_wheel)
+        scrollbar.grid(row=2, column=3, rowspan=1, sticky=N+S+W)
         scrollbar.config( command = self.yview )
 
     def yview(self, *args):
         self.lb_filenames.yview(*args)
         self.lb_predictions.yview(*args)
+
+    def on_mouse_wheel(self, event):
+        self.lb_filenames.yview("scroll", int(-1*(event.delta/60)),"units")
+        self.lb_predictions.yview("scroll", int(-1*(event.delta/60)),"units")
+        # this prevents default bindings from firing, which
+        # would end up scrolling the widget twice
+        return "break"
 
 
 class PlotFrame(ttk.Frame):
@@ -72,8 +85,6 @@ class PlotFrame(ttk.Frame):
         super().__init__(parent)
         self.f = Figure(figsize=(5,5), dpi=100)
         self.a = self.f.add_subplot(111)
-        label = ttk.Label(self, text="Graph Page!", font=LARGE_FONT)
-        label.pack(pady=10,padx=10)
 
         self.canvas = FigureCanvasTkAgg(self.f, self)
         self.canvas.draw()
