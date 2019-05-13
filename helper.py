@@ -1,20 +1,19 @@
-# Helper functions to read and preprocess data files in Matlab format
+# Helper functions to read and preprocess data files from Matlab format
 # Data science libraries
 import scipy
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
 
 # Others
-from IPython.core.debugger import set_trace
 from pathlib import Path
+
 
 def matfile_to_dic(folder_path):
     '''
-    Read all the matlab files of the CWRU Bearing Dataset and return a dictionary.
-    The key of each item is the filename and the value is the data of one matlab file, 
-    which also has key value pairs.
+    Read all the matlab files of the CWRU Bearing Dataset and return a 
+    dictionary. The key of each item is the filename and the value is the data 
+    of one matlab file, which also has key value pairs.
     
     Parameter:
         folder_path: 
@@ -25,9 +24,11 @@ def matfile_to_dic(folder_path):
     '''
     output_dic = {}
     for _, filepath in enumerate(folder_path.glob('*.mat')):
-        key_name = str(filepath).split('\\')[-1]    #strip the folder path and get the filename only.
+        # strip the folder path and get the filename only.
+        key_name = str(filepath).split('\\')[-1]
         output_dic[key_name] = scipy.io.loadmat(filepath)
     return output_dic
+
 
 def remove_dic_items(dic):
     '''
@@ -38,7 +39,8 @@ def remove_dic_items(dic):
         del values['__header__']
         del values['__version__']    
         del values['__globals__']
-        
+
+
 def rename_keys(dic):
     '''
     Rename some keys so that they can be loaded into a 
@@ -56,10 +58,12 @@ def rename_keys(dic):
                 v1['FE_time'] = v1.pop(k2)
             elif 'RPM' in k2:
                 v1['RPM'] = v1.pop(k2)
-                
+
+
 def label(filename):
     '''
-    Create label for each signal based on the filename.
+    Function to create label for each signal based on the filename. Apply this
+    to the "filename" column of the DataFrame.
     Usage:
         df['label'] = df['filename'].apply(label)
     '''
@@ -71,7 +75,8 @@ def label(filename):
         return 'OR'
     elif 'Normal' in filename:
         return 'N'
-    
+
+
 def matfile_to_df(folder_path):
     '''
     Read all the matlab files in the folder, preprocess, and return a DataFrame
@@ -90,12 +95,14 @@ def matfile_to_df(folder_path):
     df['label'] = df['filename'].apply(label)
     return df.drop(['BA_time','FE_time', 'RPM', 'ans'], axis=1, errors='ignore')
 
+
 def divide_signal(df, segment_length):
     '''
-    This function divide the signal into segments, each with a specific number of points as
-    defined by segment_length. Each segment will be added as an example (a row) in the 
-    returned DataFrame. Thus it increases the number of training examples. The remaining 
-    points which are less than segment_length are discarded.
+    This function divide the signal into segments, each with a specific number 
+    of points as defined by segment_length. Each segment will be added as an 
+    example (a row) in the returned DataFrame. Thus it increases the number of 
+    training examples. The remaining points which are less than segment_length 
+    are discarded.
     
     Parameter:
         df: 
@@ -103,7 +110,8 @@ def divide_signal(df, segment_length):
         segment_length: 
             Number of points per segment.
     Return:
-        DataFrame with segmented signals and their corresponding filename and label
+        DataFrame with segmented signals and their corresponding filename and 
+        label
     '''
     dic = {}
     idx = 0
@@ -118,8 +126,13 @@ def divide_signal(df, segment_length):
             }
             idx += 1
     df_tmp = pd.DataFrame.from_dict(dic,orient='index')
-    
-    return pd.concat([df_tmp[['label', 'filename']], pd.DataFrame(np.hstack(df_tmp["signal"].values).T)], axis=1 )
+    df_output = pd.concat(
+        [df_tmp[['label', 'filename']], 
+         pd.DataFrame(np.hstack(df_tmp["signal"].values).T)
+        ], 
+        axis=1 )
+    return df_output
+
 
 def normalize_signal(df):
     '''
@@ -130,10 +143,11 @@ def normalize_signal(df):
     std = df['DE_time'].apply(np.std)
     df['DE_time'] = (df['DE_time'] - mean) / std
 
+
 def get_df_all(normal_path, DE_path, segment_length=512, normalize=False):
     '''
     Load, preprocess and return a DataFrame which contains all signals data and
-    labels and is to be used for model training.
+    labels and is ready to be used for model training.
     
     Parameter:
         normal_path: 
@@ -156,7 +170,11 @@ def get_df_all(normal_path, DE_path, segment_length=512, normalize=False):
         normalize_signal(df_DE)
     df_normal_processed = divide_signal(df_Normal, segment_length)
     df_faulty_processed = divide_signal(df_DE, segment_length)
-    df_all = pd.concat([df_normal_processed, df_faulty_processed], axis=0, ignore_index=True)
+    df_all = pd.concat(
+        [df_normal_processed, 
+         df_faulty_processed
+        ], 
+        axis=0, ignore_index=True)
     map_label = {'N':0, 'B':1, 'IR':2, 'OR':3}
     df_all['label'] = df_all['label'].map(map_label)
     return df_all
