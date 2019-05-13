@@ -72,6 +72,9 @@ class ListViewFrame(ttk.LabelFrame):
         self.lb_predictions.yview(*args)
 
     def on_mouse_wheel(self, event):
+        '''
+        Source: https://stackoverflow.com/questions/17355902/python-tkinter-binding-mousewheel-to-scrollbar
+        '''
         self.lb_filenames.yview("scroll", int(-1*(event.delta/60)),"units")
         self.lb_predictions.yview("scroll", int(-1*(event.delta/60)),"units")
         # this prevents default bindings from firing, which
