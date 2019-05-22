@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from one_cycle import OneCycle, update_lr, update_mom
 
+
 # Functions for training
 def get_dataloader(train_ds, valid_ds, bs):
     '''
@@ -58,7 +59,7 @@ def loss_batch(model, loss_func, xb, yb, opt=None):
     '''
     out = model(xb)
     loss = loss_func(out, yb)
-    pred = torch.argmax(out, dim=1).numpy()
+    pred = torch.argmax(out, dim=1).cpu().numpy()
 
     if opt is not None:
         loss.backward()
@@ -115,6 +116,7 @@ def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None, train
     metrics_dic['train_accuracy'] = []
     metrics_dic['val_loss'] = []
     metrics_dic['val_accuracy'] = []
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     
     for epoch in range(epochs):
         # Train
@@ -122,6 +124,7 @@ def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None, train
         train_loss = 0.0
         train_accuracy = 0.0
         for xb, yb in train_dl:
+            xb, yb = xb.to(device), yb.to(device)
             loss, batch_size, pred = loss_batch(model, loss_func, xb, yb, opt)
             
             if one_cycle:
@@ -157,12 +160,14 @@ def validate(model, dl, loss_func):
     total_size = 0
     predictions = []
     y_true = []
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     for xb, yb in dl: 
+        xb, yb = xb.to(device), yb.to(device)
         loss, batch_size, pred = loss_batch(model, loss_func, xb, yb)
         total_loss += loss*batch_size
         total_size += batch_size
         predictions.append(pred)
-        y_true.append(yb.numpy())
+        y_true.append(yb.cpu().numpy())
     mean_loss = total_loss / total_size
     predictions = np.concatenate(predictions, axis=0)
     y_true = np.concatenate(y_true, axis=0)
