@@ -17,13 +17,18 @@ class _Model:
         self.data['filepaths'] = []
         self.data['signals'] = []
         self.data['prediction'] = []
-
+        self.pred2class_map = {
+            0:'N',
+            1:'B',
+            2:'IR',
+            3:'OR',
+        }
     def get_signal(self, file_index):
         return self.data['filenames'][file_index], self.data['signals'][file_index]
 
     def update_prediction(self, file_index):
         prediction = self.predict(file_index)
-        self.data['prediction'][file_index] = prediction
+        self.data['prediction'][file_index] = self.pred2class_map[prediction]
     
     def predict(self, file_index):
         print("Not implemented")
