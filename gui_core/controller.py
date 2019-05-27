@@ -11,7 +11,7 @@ class StartPageController:
         self.page.button_del_all.config(command=self.delete_list_all)
         self.page.button_del_selected.config(command=self.delete_list_selected)
         self.page.button_pred.config(command=self.get_predictions)
-        self.page.plotframe.draw_button.config(command=self.plot_something)
+        self.page.draw_button.config(command=self.plot_something)
 
     def select_files(self):
         paths = filedialog.askopenfilenames()

@@ -16,7 +16,7 @@ class StartPage(tk.Frame):
 
     def __init__(self, parent, controller):
         super().__init__(parent)
-        label = tk.Label(self, text="Start Page", font=LARGE_FONT)
+        label = tk.Label(self, text="", font=LARGE_FONT)
         label.grid(row=1, column=1, pady=10,padx=10)
 
         self.labelframe = ListViewFrame(self, text="Files")
@@ -26,13 +26,15 @@ class StartPage(tk.Frame):
         self.button_frame.grid(row=3, column=1, pady=10,padx=10)
         
         self.button_open = ttk.Button(self.button_frame, text="Open")
-        self.button_open.grid(row=1, column=1, rowspan=1)
-        self.button_del_all = ttk.Button(self.button_frame, text="Delete All")
-        self.button_del_all.grid(row=1, column=2, rowspan=1)
+        self.button_open.grid(row=1, column=1, pady=3,padx=5, rowspan=1)
         self.button_del_selected = ttk.Button(self.button_frame, text="Delete")
-        self.button_del_selected.grid(row=1, column=3, rowspan=1)
+        self.button_del_selected.grid(row=2, column=1, pady=3, padx=5, rowspan=1)
+        self.button_del_all = ttk.Button(self.button_frame, text="Delete All")
+        self.button_del_all.grid(row=3, column=1, pady=3, padx=5, rowspan=1)
         self.button_pred = ttk.Button(self.button_frame, text="Predict")
-        self.button_pred.grid(row=1, column=4, rowspan=1)
+        self.button_pred.grid(row=1, column=3, pady=3, padx=30, rowspan=1)
+        self.draw_button = ttk.Button(self.button_frame, text="Draw")
+        self.draw_button.grid(row=2, column=3, pady=3, padx=30, rowspan=1)
 
         self.plotframe = PlotFrame(self)
         self.plotframe.grid(row=1, column=2, rowspan=3)
@@ -97,5 +99,4 @@ class PlotFrame(ttk.Frame):
         toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self.draw_button = ttk.Button(self, text="Draw Something")
-        self.draw_button.pack()
+        
