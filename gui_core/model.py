@@ -42,7 +42,7 @@ class CNN_1D(_Model):
     def __init__(self):
         super().__init__()
         self.pred_model = nn_model.CNN_1D_2L(500)
-        self.pred_model.load_state_dict(torch.load(save_model_path / 'model.pth'))
+        self.pred_model.load_state_dict(torch.load(save_model_path / 'model.pth', map_location='cpu'))
         self.pred_model.eval()
 
     def predict(self, file_index):
