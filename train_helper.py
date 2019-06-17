@@ -135,9 +135,9 @@ def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None, train
         # Validate
         model.eval()
         with torch.no_grad():
-            val_loss, val_accuracy = validate(model, valid_dl, loss_func)
+            val_loss, val_accuracy, _ = validate(model, valid_dl, loss_func)
             if train_metric:
-                train_loss, train_accuracy = validate(model, train_dl, loss_func)
+                train_loss, train_accuracy, _ = validate(model, train_dl, loss_func)
 
         metrics_dic['val_loss'].append(val_loss)
         metrics_dic['val_accuracy'].append(val_accuracy)
@@ -172,4 +172,4 @@ def validate(model, dl, loss_func):
     predictions = np.concatenate(predictions, axis=0)
     y_true = np.concatenate(y_true, axis=0)
     accuracy = np.mean((predictions == y_true))
-    return mean_loss, accuracy
+    return mean_loss, accuracy, (y_true, predictions)

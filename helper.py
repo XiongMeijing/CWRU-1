@@ -7,7 +7,8 @@ import pandas as pd
 
 # Others
 from pathlib import Path
-
+from tqdm.auto import tqdm
+import requests
 
 def matfile_to_dic(folder_path):
     '''
@@ -144,7 +145,7 @@ def normalize_signal(df):
     df['DE_time'] = (df['DE_time'] - mean) / std
 
 
-def get_df_all(normal_path, DE_path, segment_length=512, normalize=False):
+def get_df_all(data_path, segment_length=512, normalize=False):
     '''
     Load, preprocess and return a DataFrame which contains all signals data and
     labels and is ready to be used for model training.
@@ -162,19 +163,32 @@ def get_df_all(normal_path, DE_path, segment_length=512, normalize=False):
         df_all: 
             DataFrame which is ready to be used for model training.
     '''
-    df_Normal = matfile_to_df(normal_path)
-    df_DE = matfile_to_df(DE_path)
+    df = matfile_to_df(data_path)
 
     if normalize:
-        normalize_signal(df_Normal)
-        normalize_signal(df_DE)
-    df_normal_processed = divide_signal(df_Normal, segment_length)
-    df_faulty_processed = divide_signal(df_DE, segment_length)
-    df_all = pd.concat(
-        [df_normal_processed, 
-         df_faulty_processed
-        ], 
-        axis=0, ignore_index=True)
+        normalize_signal(df)
+    df_processed = divide_signal(df, segment_length)
+
     map_label = {'N':0, 'B':1, 'IR':2, 'OR':3}
-    df_all['label'] = df_all['label'].map(map_label)
-    return df_all
+    df_processed['label'] = df_processed['label'].map(map_label)
+    return df_processed
+
+def download(url:str, dest_dir:Path, save_name:str, suffix=None) -> Path:
+    assert isinstance(dest_dir, Path), "dest_dir must be a Path object"
+    if not dest_dir.exists():
+        dest_dir.mkdir()
+    if save_name == None: filename = url.split('/')[-1]
+    else: filename = save_name+suffix
+    file_path = dest_dir / filename
+    if not file_path.exists():
+        print(f"Downloading {file_path}")
+        with open(f'{file_path}', 'wb') as f:
+            response = requests.get(url, stream=True)
+            total = int(response.headers.get('content-length'))
+            with tqdm(total=total, unit='B', unit_scale=True, desc=filename) as pbar:
+                for data in response.iter_content(chunk_size=1024*1024):
+                    f.write(data)
+                    pbar.update(1024*1024)
+    else:
+        return file_path
+    return file_path
