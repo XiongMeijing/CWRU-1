@@ -123,9 +123,13 @@ def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None, train
         model.train()
         train_loss = 0.0
         train_accuracy = 0.0
+        num_examples = 0
         for xb, yb in train_dl:
             xb, yb = xb.to(device), yb.to(device)
             loss, batch_size, pred = loss_batch(model, loss_func, xb, yb, opt)
+            if train_metric == False:
+                train_loss += loss
+                num_examples += batch_size
             
             if one_cycle:
                 lr, mom = one_cycle.calc()
@@ -138,6 +142,8 @@ def fit(epochs, model, loss_func, opt, train_dl, valid_dl, one_cycle=None, train
             val_loss, val_accuracy, _ = validate(model, valid_dl, loss_func)
             if train_metric:
                 train_loss, train_accuracy, _ = validate(model, train_dl, loss_func)
+            else:
+                train_loss = train_loss / num_examples
 
         metrics_dic['val_loss'].append(val_loss)
         metrics_dic['val_accuracy'].append(val_accuracy)
